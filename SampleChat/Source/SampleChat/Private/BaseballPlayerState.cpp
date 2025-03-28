@@ -8,6 +8,7 @@
 ABaseballPlayerState::ABaseballPlayerState()
 {
     bReplicates = true;
+    RemainingTurn = 3;
 }
 
 void ABaseballPlayerState::OnRep_UserId()
@@ -21,13 +22,8 @@ void ABaseballPlayerState::OnRep_UserId()
 
     if (IsValid(PC))
     {
-        PC->SetPlayerId(UserId);
+        PC->DisplayUserId(UserId);
     }
-    else
-    {
-        UE_LOG(LogTemp, Error, TEXT("OnRep_UserId: PlayerController is NULL!"));
-    }
-    //UE_LOG(LogTemp, Warning, TEXT("In Client UserId Changed: %s"), *UserId);
 }
 
 void ABaseballPlayerState::SetUserId(const FString& NewUserId)
@@ -35,12 +31,14 @@ void ABaseballPlayerState::SetUserId(const FString& NewUserId)
     if (HasAuthority())  // 서버에서 실행할 때만 동작
     {
         UserId = NewUserId;
-        //OnRep_PlayerId();
-        //UE_LOG(LogTemp, Log, TEXT("In Server UserId Changed: %s"), *UserId);
     }
-    else
+}
+
+void ABaseballPlayerState::SetRemainingTurn(const int32 NewTurns)
+{
+    if (HasAuthority())  // 서버에서 실행할 때만 동작
     {
-        //UE_LOG(LogTemp, Error, TEXT("[Client] Try to Change UserId!"));
+        RemainingTurn = NewTurns;
     }
 }
 
@@ -50,4 +48,5 @@ void ABaseballPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 
     // UserId를 복제 (Replicate)
     DOREPLIFETIME(ABaseballPlayerState, UserId);
+    DOREPLIFETIME(ABaseballPlayerState, RemainingTurn);
 }

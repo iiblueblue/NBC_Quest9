@@ -8,6 +8,7 @@
 
 class UEditableTextBox;
 class UTextBlock;
+class UImage;
 /**
  * 
  */
@@ -29,6 +30,20 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> TextBlock_Id;
 
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> TextBlock_Turn;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> Image_Chance1;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> Image_Chance2;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> Image_Chance3;
+
+	TArray<TObjectPtr<UImage>> Image_Chances;
+
 protected:
 	UFUNCTION()
 	void OnChatInputTextCommitted(const FText& Text, ETextCommit::Type CommitMethod);
@@ -40,6 +55,14 @@ public:
 	void SetResultText(const FText& NewText);
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void SetIdText(const FText& NewText);
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void SetTurnText(const FText& NewText);
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void SetTurnImage(const int32 ThisTurn);
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void SetTurnTextColor(bool bIsMyTurn);
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void SetEditableBoxReadOnly(bool bIsMyTurn);
 
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;

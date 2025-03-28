@@ -10,7 +10,11 @@
 
 void ABaseballGameState::OnRep_RemainingTime()
 {
-	OnTimeUpdated.Broadcast(RemainingTime);
+	ABaseballPlayerController* PlayerController = Cast<ABaseballPlayerController>(GetWorld()->GetFirstPlayerController());
+	if (PlayerController)
+	{
+		PlayerController->DisplayTimer(RemainingTime);
+	}
 }
 
 void ABaseballGameState::OnRep_CurrentTurnPlayer()
@@ -35,7 +39,11 @@ void ABaseballGameState::OnRep_CurrentTurnPlayer()
 	UE_LOG(LogTemp, Warning, TEXT("Current Turn UserId: %s"), *UserId);
 
 	// UI 업데이트 이벤트 실행
-	OnTurnUpdated.Broadcast(UserId);
+	ABaseballPlayerController* PlayerController = Cast<ABaseballPlayerController>(GetWorld()->GetFirstPlayerController());
+	if (PlayerController)
+	{
+		PlayerController->DisplayTurn(UserId);
+	}
 }
 
 void ABaseballGameState::UpdateTime(int32 NewTime)
@@ -44,14 +52,6 @@ void ABaseballGameState::UpdateTime(int32 NewTime)
 	{
 		RemainingTime = NewTime;
 		OnRep_RemainingTime(); // 서버에서도 UI 업데이트 이벤트 실행
-	}
-}
-
-void ABaseballGameState::UpdateTurn(FString Id)
-{
-	if (HasAuthority())
-	{
-
 	}
 }
 

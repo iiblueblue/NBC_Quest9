@@ -17,7 +17,7 @@ void ABaseballPlayerController::BeginPlay()
 	ABaseballPlayerState* MyPlayerState = GetPlayerState<ABaseballPlayerState>();
 	if (MyPlayerState)
 	{
-		SetPlayerId(MyPlayerState->UserId);
+		DisplayUserId(MyPlayerState->UserId);
 	}
 }
 
@@ -30,7 +30,7 @@ void ABaseballPlayerController::SetChatMessageString(const FString& InChatMessag
 
 void ABaseballPlayerController::ClientRPCReceiveChatMessage_Implementation(const FString& InChatMessageString)
 {
-	DisplayChatMessage(InChatMessageString);
+	DisplayResult(InChatMessageString);
 }
 
 void ABaseballPlayerController::ServerRPCSendChatMessage_Implementation(const FString& InChatMessageString)
@@ -42,7 +42,7 @@ void ABaseballPlayerController::ServerRPCSendChatMessage_Implementation(const FS
 	}
 }
 
-void ABaseballPlayerController::SetPlayerId(const FString& PlayerId)
+void ABaseballPlayerController::DisplayUserId(const FString& PlayerId)
 {
 	UE_LOG(LogTemp, Warning, TEXT("SetPlayerId %s"), *PlayerId);
 	if (IsValid(BaseballUserWidgetInstance))
@@ -66,7 +66,37 @@ void ABaseballPlayerController::CreateUserWidget()
 	}
 }
 
-void ABaseballPlayerController::DisplayChatMessage(const FString& ChatMessage)
+void ABaseballPlayerController::DisplayTimer(const int32 NewTime)
+{
+	if (IsValid(BaseballUserWidgetInstance))
+	{
+		BaseballUserWidgetInstance->SetTimerText(FText::AsNumber(NewTime));
+	}
+}
+
+void ABaseballPlayerController::DisplayTurn(const FString& PlayerId)
+{
+	if (IsValid(BaseballUserWidgetInstance))
+	{
+		BaseballUserWidgetInstance->SetTurnText(FText::FromString(PlayerId));
+
+		ABaseballPlayerState* MyPlayerState = GetPlayerState<ABaseballPlayerState>();
+		// 자신의 턴이라면
+		if (MyPlayerState->UserId == PlayerId)
+		{
+			BaseballUserWidgetInstance->SetTurnTextColor(true);
+			BaseballUserWidgetInstance->SetEditableBoxReadOnly(true);
+		}
+		else
+		{
+			BaseballUserWidgetInstance->SetTurnTextColor(false);
+			BaseballUserWidgetInstance->SetEditableBoxReadOnly(false);
+			BaseballUserWidgetInstance->SetTurnImage(MyPlayerState->RemainingTurn);
+		}
+	}
+}
+
+void ABaseballPlayerController::DisplayResult(const FString& ChatMessage)
 {
 	if (IsValid(BaseballUserWidgetInstance))
 	{

@@ -5,6 +5,7 @@
 #include "Components/EditableTextBox.h"
 #include "Components/TextBlock.h"
 #include "Widgets/Text/STextBlock.h"
+#include "Components/Image.h"
 #include "Framework/Text/TextLayout.h"
 #include "BaseballPlayerController.h"
 #include "MyBlueprintFunctionLibrary.h"
@@ -59,9 +60,63 @@ void UBaseballUserWidget::SetIdText(const FText& NewText)
 	}
 }
 
+void UBaseballUserWidget::SetTurnText(const FText& NewText)
+{
+	if (TextBlock_Turn)
+	{
+		TextBlock_Turn->SetText(FText::Format(FText::FromString(TEXT("{0} Turn")), NewText));
+	}
+}
+
+void UBaseballUserWidget::SetTurnImage(const int32 ThisTurn)
+{
+	if (Image_Chance1 && Image_Chance2 && Image_Chance3)
+	{
+		if (ThisTurn <= 2 && ThisTurn >= 0)
+		{
+			FLinearColor NewColor = FLinearColor(1.0f, 1.0f, 1.0f, 1.0f);  // Èò»ö
+			Image_Chances[ThisTurn]->SetColorAndOpacity(NewColor);
+		}
+	}
+}
+
+void UBaseballUserWidget::SetTurnTextColor(bool bIsMyTurn)
+{
+	if (TextBlock_Turn)
+	{
+		if (bIsMyTurn)
+		{
+			FSlateColor HighlightColor = FSlateColor(FLinearColor::Yellow);
+			TextBlock_Turn->SetColorAndOpacity(HighlightColor);
+		}
+		else
+		{
+			FSlateColor DefaultColor = FSlateColor(FLinearColor::White);
+			TextBlock_Turn->SetColorAndOpacity(DefaultColor);
+		}
+	}
+}
+
+void UBaseballUserWidget::SetEditableBoxReadOnly(bool bIsMyTurn)
+{
+	if (EditableTextBox_ChatInput)
+	{
+		if (bIsMyTurn)
+		{
+			EditableTextBox_ChatInput->SetIsReadOnly(false);
+		}
+		else
+		{
+			EditableTextBox_ChatInput->SetIsReadOnly(true);
+		}
+	}
+}
+
 void UBaseballUserWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+
+	Image_Chances = { Image_Chance1, Image_Chance2, Image_Chance3 };
 
 	if (EditableTextBox_ChatInput->OnTextCommitted.IsAlreadyBound(this, &ThisClass::OnChatInputTextCommitted) == false)
 	{

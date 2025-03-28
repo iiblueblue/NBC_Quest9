@@ -17,6 +17,7 @@ class SAMPLECHAT_API ABaseballGameMode : public AGameModeBase
 public:
 	TArray<int32> Answer;
 	FTimerHandle TurnTimerHandle; // 타이머 핸들
+	FTimerHandle GameStartTimerHandle;
 
 	UFUNCTION(BlueprintCallable, Category = "Game")
 	void StartTurnTimer();
@@ -34,11 +35,14 @@ public:
 	FString CompareNumbers(TArray<int32> answer, TArray<int32> number);
 
 	UFUNCTION(BlueprintCallable, Category="Game")
-	void EndGame();
+	void GameOver();
+	void GameSuccess();
 
 	virtual void OnPostLogin(AController* NewPlayer) override;
-
+	virtual void BeginPlay() override;
+	bool IsAllTurnsUsed();
 protected:
 	void BroadcastingChatMessage(const FString& ChatMessage);
+	void BroadcastingGameResult(bool IsSuccess);
 
 };

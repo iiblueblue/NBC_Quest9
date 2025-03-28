@@ -5,9 +5,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameStateBase.h"
 #include "BaseballGameState.generated.h"
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTimeUpdated, int32, NewTime);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTurnUpdated, FString, Id);
 /**
  * 
  */
@@ -23,12 +20,6 @@ public:
 	UPROPERTY(ReplicatedUsing = OnRep_CurrentTurnPlayer, BlueprintReadOnly, Category = "Turn")
 	APlayerState* CurrentTurnPlayer;
 
-	UPROPERTY(BlueprintAssignable, Category="Events")
-	FOnTimeUpdated OnTimeUpdated;
-
-	UPROPERTY(BlueprintAssignable, Category = "Events")
-	FOnTurnUpdated OnTurnUpdated;
-
 	UFUNCTION()
 	void OnRep_RemainingTime();
 
@@ -36,7 +27,6 @@ public:
 	void OnRep_CurrentTurnPlayer();
 
 	void UpdateTime(int32 NewTime);
-	void UpdateTurn(FString Id);
 
 	UFUNCTION(BlueprintCallable)
 	void SetNextTurn();

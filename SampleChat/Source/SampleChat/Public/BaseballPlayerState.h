@@ -20,11 +20,17 @@ public:
 	UPROPERTY(ReplicatedUsing = OnRep_UserId, BlueprintReadWrite, Category="Player Info")
 	FString UserId;
 
+	UPROPERTY(Replicated)
+	int32 RemainingTurn;
+
 	UFUNCTION()
 	void OnRep_UserId();
 
 	UFUNCTION(BlueprintCallable)
 	void SetUserId(const FString& NewUserId);
+
+	UFUNCTION(BlueprintCallable)
+	void SetRemainingTurn(const int32 NewTurns);
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	

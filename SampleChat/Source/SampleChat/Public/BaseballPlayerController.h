@@ -35,8 +35,10 @@ public:
 	UFUNCTION(Server, Reliable)
 	void ServerRPCSendChatMessage(const FString& InChatMessageString);
 
-	void SetPlayerId(const FString& PlayerId);
 	void CreateUserWidget();
+	void DisplayUserId(const FString& PlayerId);
+	void DisplayTimer(const int32 NewTime);
+	void DisplayTurn(const FString& PlayerId);
 protected:
-	void DisplayChatMessage(const FString& ChatMessage);
+	void DisplayResult(const FString& ChatMessage);
 };

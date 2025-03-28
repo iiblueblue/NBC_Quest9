@@ -13,7 +13,7 @@ void ABaseballGameMode::StartTurnTimer()
 	ABaseballGameState* GS = GetGameState<ABaseballGameState>();
 	if (GS)
 	{
-		GS->RemainingTime = 10; // 제한 시간 초기화
+		GS->RemainingTime = 15; // 제한 시간 초기화
 	}
 
 	GetWorldTimerManager().SetTimer(TurnTimerHandle, this, &ABaseballGameMode::DecreaseTime, 1.0f, true);
@@ -38,15 +38,39 @@ void ABaseballGameMode::ChangeTurn()
 	ABaseballGameState* GS = GetGameState<ABaseballGameState>();
 	if (GS)
 	{
+		if (IsAllTurnsUsed())
+		{
+			GameOver();
+		}
+		else
+		{
+			// 타이머 초기화
+			if (GetWorld()->GetTimerManager().IsTimerActive(TurnTimerHandle))
+			{
+				GetWorld()->GetTimerManager().ClearTimer(TurnTimerHandle);
+			}
+			StartTurnTimer();
+		}
+		
 		GS->SetNextTurn();
-		StartTurnTimer();
+		ABaseballPlayerState* PS = Cast<ABaseballPlayerState>(GS->CurrentTurnPlayer);
+		PS->SetRemainingTurn(PS->RemainingTurn - 1);
+		
 	}
 }
 
 void ABaseballGameMode::ServerRPCBroadcastChatMessage_Implementation(const FString& ChatMessage)
 {
 	TArray<int32> Msg = UMyBlueprintFunctionLibrary::ConvertStringToArray(ChatMessage);
-	BroadcastingChatMessage(CompareNumbers(Answer, Msg));
+	FString Result = CompareNumbers(Answer, Msg);
+	if (Result == "Answer")
+	{
+		GameSuccess();
+	}
+	else
+	{
+		BroadcastingChatMessage(Result);
+	}
 }
 
 TArray<int32> ABaseballGameMode::GenerateRandomThreeDigitNumber()
@@ -58,6 +82,8 @@ TArray<int32> ABaseballGameMode::GenerateRandomThreeDigitNumber()
 	{
 		int32 Index = FMath::RandRange(0, AvailableNumber.Num() - 1);
 		RandomNumber.Add(AvailableNumber[Index]);
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("answer : %d"), AvailableNumber[Index]));
+
 		AvailableNumber.RemoveAt(Index);
 	}
 	Answer = RandomNumber;
@@ -101,9 +127,24 @@ FString ABaseballGameMode::CompareNumbers(TArray<int32> answer, TArray<int32> nu
 	}
 }
 
-void ABaseballGameMode::EndGame()
+void ABaseballGameMode::GameOver()
 {
+	// 타이머 초기화
+	if (GetWorld()->GetTimerManager().IsTimerActive(TurnTimerHandle))
+	{
+		GetWorld()->GetTimerManager().ClearTimer(TurnTimerHandle);
+	}
+	BroadcastingGameResult(false);
+}
 
+void ABaseballGameMode::GameSuccess()
+{
+	// 타이머 초기화
+	if (GetWorld()->GetTimerManager().IsTimerActive(TurnTimerHandle))
+	{
+		GetWorld()->GetTimerManager().ClearTimer(TurnTimerHandle);
+	}
+	BroadcastingGameResult(true);
 }
 
 void ABaseballGameMode::OnPostLogin(AController* NewPlayer)
@@ -118,8 +159,36 @@ void ABaseballGameMode::OnPostLogin(AController* NewPlayer)
 			FString PlayerID = PC->IsLocalController() ? TEXT("Host") : TEXT("Guest");
 
 			PS->SetUserId(PlayerID);
+			PC->DisplayUserId(PlayerID);
 		}
 	}
+
+	if (GetNumPlayers() >= 2)
+	{
+		GetWorld()->GetTimerManager().SetTimer(GameStartTimerHandle, this, &ABaseballGameMode::ChangeTurn, 2.0f, false);
+	}
+}
+
+void ABaseballGameMode::BeginPlay()
+{
+	GenerateRandomThreeDigitNumber();
+}
+
+bool ABaseballGameMode::IsAllTurnsUsed()
+{
+	for (TActorIterator<ABaseballPlayerController> It(GetWorld()); It; ++It)
+	{
+		ABaseballPlayerController* PlayerController = *It;
+		if (IsValid(PlayerController))
+		{
+			ABaseballPlayerState* PS = Cast<ABaseballPlayerState>(PlayerController->PlayerState);
+			if (PS->RemainingTurn > 0)
+			{
+				return false;
+			}
+		}
+	}
+	return true;
 }
 
 void ABaseballGameMode::BroadcastingChatMessage(const FString& ChatMessage)
@@ -130,6 +199,47 @@ void ABaseballGameMode::BroadcastingChatMessage(const FString& ChatMessage)
 		if (IsValid(PlayerController))
 		{
 			PlayerController->ClientRPCReceiveChatMessage(ChatMessage);
+		}
+	}
+
+	if (ChatMessage != "DRAW")
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, (TEXT("NotDraw")));
+		ChangeTurn();
+	}
+	
+}
+
+void ABaseballGameMode::BroadcastingGameResult(bool IsSuccess)
+{
+	for (TActorIterator<ABaseballPlayerController> It(GetWorld()); It; ++It)
+	{
+		ABaseballPlayerController* PlayerController = *It;
+		if (IsValid(PlayerController))
+		{
+			if (IsSuccess)
+			{
+				ABaseballPlayerState* PS = Cast<ABaseballPlayerState>(PlayerController->PlayerState);
+				if (PS)
+				{
+					ABaseballGameState* GS = GetGameState<ABaseballGameState>();
+					if (GS)
+					{
+						if (PS == GS->CurrentTurnPlayer)
+						{
+							PlayerController->ClientRPCReceiveChatMessage("WIN");
+						}
+						else
+						{
+							PlayerController->ClientRPCReceiveChatMessage("LOSE");
+						}
+					}
+				}
+			}
+			else
+			{
+				PlayerController->ClientRPCReceiveChatMessage("DRAW");
+			}
 		}
 	}
 }
