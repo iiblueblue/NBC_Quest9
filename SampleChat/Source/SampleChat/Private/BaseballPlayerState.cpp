@@ -13,7 +13,6 @@ ABaseballPlayerState::ABaseballPlayerState()
 
 void ABaseballPlayerState::OnRep_UserId()
 {
-    UE_LOG(LogTemp, Warning, TEXT("OnRep_UserId Triggered - New Value: %s"), *UserId);
     ABaseballPlayerController* PC = Cast<ABaseballPlayerController>(GetOwner());  // 기존 방식 (잘못될 가능성 있음)
     if (!PC)
     {

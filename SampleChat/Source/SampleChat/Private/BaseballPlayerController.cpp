@@ -44,7 +44,6 @@ void ABaseballPlayerController::ServerRPCSendChatMessage_Implementation(const FS
 
 void ABaseballPlayerController::DisplayUserId(const FString& PlayerId)
 {
-	UE_LOG(LogTemp, Warning, TEXT("SetPlayerId %s"), *PlayerId);
 	if (IsValid(BaseballUserWidgetInstance))
 	{
 		BaseballUserWidgetInstance->SetIdText(FText::FromString(PlayerId));
@@ -102,5 +101,4 @@ void ABaseballPlayerController::DisplayResult(const FString& ChatMessage)
 	{
 		BaseballUserWidgetInstance->SetResultText(FText::FromString(ChatMessage));
 	}
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, ChatMessage);
 }

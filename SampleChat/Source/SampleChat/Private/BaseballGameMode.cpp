@@ -201,12 +201,7 @@ void ABaseballGameMode::BroadcastingChatMessage(const FString& ChatMessage)
 			PlayerController->ClientRPCReceiveChatMessage(ChatMessage);
 		}
 	}
-
-	if (ChatMessage != "DRAW")
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, (TEXT("NotDraw")));
-		ChangeTurn();
-	}
+	ChangeTurn();
 	
 }
 

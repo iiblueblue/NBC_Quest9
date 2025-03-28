@@ -21,22 +21,17 @@ void ABaseballGameState::OnRep_CurrentTurnPlayer()
 {
 	if (!CurrentTurnPlayer)
 	{
-		UE_LOG(LogTemp, Error, TEXT("OnRep_CurrentTurnPlayer: CurrentTurnPlayer is NULL!"));
 		return;
 	}
 
 	// APlayerState 캐스팅
 	ABaseballPlayerState* PlayerState = Cast<ABaseballPlayerState>(CurrentTurnPlayer);
 	if (!PlayerState)
-	{
-		UE_LOG(LogTemp, Error, TEXT("OnRep_CurrentTurnPlayer: PlayerState is NULL!"));
+	{	
 		return;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("OnRep: CurrentTurnPlayer = %s"), *GetNameSafe(CurrentTurnPlayer));
-
 	FString UserId = PlayerState->UserId;
-	UE_LOG(LogTemp, Warning, TEXT("Current Turn UserId: %s"), *UserId);
 
 	// UI 업데이트 이벤트 실행
 	ABaseballPlayerController* PlayerController = Cast<ABaseballPlayerController>(GetWorld()->GetFirstPlayerController());
@@ -57,10 +52,8 @@ void ABaseballGameState::UpdateTime(int32 NewTime)
 
 void ABaseballGameState::SetNextTurn()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("SetNextTurn"));
 	if (HasAuthority())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("PlayerArray Num: %d"), PlayerArray.Num());
 		if (PlayerArray.Num() < 2) return;
 
 		APlayerState* FirstPlayerState = PlayerArray[0];
@@ -72,18 +65,14 @@ void ABaseballGameState::SetNextTurn()
 		if (!FirstPlayer || !SecondPlayer) return;
 
 		CurrentTurnPlayer = (CurrentTurnPlayer == FirstPlayer) ? SecondPlayer : FirstPlayer;
-		UE_LOG(LogTemp, Warning, TEXT("SetNextTurn: CurrentTurnPlayer set to %s"), *GetNameSafe(CurrentTurnPlayer));
 
 		// 테스트
 		if (ABaseballPlayerState* TurnPS = Cast<ABaseballPlayerState>(CurrentTurnPlayer))
 		{
 			if (TurnPS->UserId.IsEmpty())
 			{
-				UE_LOG(LogTemp, Error, TEXT("[Server] CurrentTurnPlayer UserId is EMPTY! Resetting..."));
 				TurnPS->SetUserId(FString::Printf(TEXT("Player_%d"), TurnPS->GetUniqueID()));  // 강제로 ID 설정
 			}
-
-			UE_LOG(LogTemp, Warning, TEXT("[Server] Current Turn UserId: %s"), *TurnPS->UserId);
 		}
 
 		OnRep_CurrentTurnPlayer();
